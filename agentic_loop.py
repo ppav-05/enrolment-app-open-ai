@@ -291,7 +291,7 @@ def get_review_agent_advice(implementation_message, observe_message):
     #       "{{IMPLEMENTATION_RECOMMENDATION}}" and "{{VALIDATION_EVIDENCE}}"
     #       placeholders.
 
-    review_task_prompt = load_prompt("Review_task_prompt.txt")
+    review_task_prompt = load_prompt("review_task_prompt.txt")
     review_task_prompt = review_task_prompt.replace('{{IMPLEMENTATION_RECOMMENDATION}}', implementation_message)
     review_task_prompt = review_task_prompt.replace('{{VALIDATION_EVIDENCE}}', observe_message)
 
