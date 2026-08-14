@@ -169,7 +169,6 @@ def ask_local_agent():
             503,
         )
 
-
 # TASK 1: Implement the context-aware /ask-with-context endpoint. It must load
 # the implementation system prompt and context QA task prompt from files,
 # merge the task prompt with the user's question, send both to the local
@@ -185,20 +184,49 @@ def ask_with_context():
     # TODO: Load "implementation_system_prompt.txt" and
     #       "context_qa_task_prompt.txt" using load_prompt().
 
-    
+    implementation_system_prompt = load_prompt("implementation_system_prompt.txt")
+    context_qa_task_prompt = load_prompt("context_qa_task_prompt.txt")
 
     # TODO: Build the final prompt by combining the task prompt with the
     #       user's question.
 
+    final_prompt = context_qa_task_prompt.replace("{question}", question)
+
     # TODO: Call client.chat.completions.create() using OLLAMA_MODEL, the
     #       system prompt, and the final prompt (max_tokens=300, temperature=0).
 
+    try:
+        response = client.chat.completions.create(
+            model=OLLAMA_MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": implementation_system_prompt
+                },
+                {
+                    "role": "user",
+                    "content": final_prompt
+                }
+            ],
+            max_tokens=300,
+            temperature=0.0,
+        )
+
+        answer = response.choices[0].message.content
+        
     # TODO: Return the model's answer wrapped in "<p>...</p>".
+
+        return f"<p>{answer}</p>"
 
     # TODO: Catch exceptions and return "<p>Context-aware request failed.</p>"
     #       plus the exception details, with HTTP status 503.
-    pass
 
+    except Exception as exc:
+        return (
+            "<p>Context-aware request failed.</p>"
+            f"<pre>{exc}</pre>",
+            503,
+        )
 
 if __name__ == "__main__":
     app.run(debug=True)
