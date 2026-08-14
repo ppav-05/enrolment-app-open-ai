@@ -182,9 +182,6 @@ def ask_with_context():
     if not question:
         return "<p>Question is required.</p>", 400
 
-    implementation_system_prompt = load.prompt("implementation_system_prompt.txt")
-    context_qa_task_prompt = load.prompt("context_qa_task_prompt.txt")
-
     # TODO: Load "implementation_system_prompt.txt" and
     #       "context_qa_task_prompt.txt" using load_prompt().
 
