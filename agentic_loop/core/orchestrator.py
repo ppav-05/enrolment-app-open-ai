@@ -1,16 +1,17 @@
 from pathlib import Path
 
-from collectors import architecture_collector, db_collector, endpoints_collector
+from collectors import architecture_collector, db_collector, devops_collector, endpoints_collector
 from config.review_config import ModeConfig
 from core.ai_runner import AIRunner
 from core.prompt_registry import PromptRegistry
-from pipelines import architecture_pipeline, db_pipeline, endpoints_pipeline
+from pipelines import architecture_pipeline, db_pipeline, devops_pipeline, endpoints_pipeline
 
 
 COLLECTORS = {
     "db": db_collector.collect,
     "endpoints": endpoints_collector.collect,
     "architecture": architecture_collector.collect,
+    "devops": devops_collector.collect,
 }
 
 
@@ -79,6 +80,42 @@ def run_mode(mode: ModeConfig, app_dir: Path, repo_root: Path, prompts: PromptRe
         return (
             f"OBSERVE: {evidence}\n\n"
             f"ARCHITECTURE: {implementation_output}\n"
+            f"REVIEW: {review_output}"
+        )
+
+    if mode.key == "devops":
+        _stage(mode.label, "PROMPTS", f"Loading prompt family: {mode.prompt_family}")
+        task_prompt = prompts.read(mode.prompt_family, mode.implementation_prompts[0])
+        system_prompt = (
+            "You are a precise DevOps review assistant. "
+            "Use only supplied evidence and reply in at most 30 words."
+        )
+        implementation_user_prompt = devops_pipeline.build_implementation_prompt(task_prompt, evidence)
+        _stage(mode.label, "PROMPTS", "Loaded DevOps implementation prompt")
+
+        _stage(mode.label, "LLM", "Running DevOps implementation model")
+        implementation_output, err = ai.call(system_prompt, implementation_user_prompt, review=False)
+        if err:
+            _stage(mode.label, "LLM", "Failed")
+            return f"MODEL FAILED: {err}"
+        _stage(mode.label, "LLM", "DevOps implementation model complete")
+
+        review_system_prompt = prompts.read(mode.prompt_family, mode.review_prompts[0])
+        review_user_prompt = devops_pipeline.build_review_prompt(implementation_output, evidence)
+        _stage(mode.label, "PROMPTS", "Loaded DevOps review prompt")
+        _stage(mode.label, "LLM", "Running DevOps review model")
+        review_output, review_err = ai.call(review_system_prompt, review_user_prompt, review=True)
+        if review_err:
+            review_output = review_err
+            _stage(mode.label, "LLM", "DevOps review model failed")
+        else:
+            _stage(mode.label, "LLM", "DevOps review model complete")
+
+        _stage(mode.label, "DONE", "Review complete")
+
+        return (
+            f"OBSERVE: {evidence}\n\n"
+            f"DEVOPS: {implementation_output}\n"
             f"REVIEW: {review_output}"
         )
 
