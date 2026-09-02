@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASD Release 0 - Team Portal</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="app-container">
+    <header class="app-header">
+        <h1>🎓 ASD Release 0</h1>
+        <p>Advanced Software Development with Agentic AI</p>
+        <div class="team-info">
+            <p><strong>Team Portal</strong> | Integrated Multi-Service Application</p>
+        </div>
+    </header>
+
+    <!-- Feature Navigation -->
+    <nav class="feature-nav" aria-label="Student Features">
+        <button class="feature-btn is-active" data-feature="enrolment" type="button">
+            📚 Enrolment
+        </button>
+        <button class="feature-btn" data-feature="student-2" type="button">
+            👤 Student 2
+        </button>
+        <button class="feature-btn" data-feature="student-3" type="button">
+            👥 Student 3
+        </button>
+        <button class="feature-btn" data-feature="student-4" type="button">
+            📊 Student 4
+        </button>
+        <button class="feature-btn" data-feature="student-5" type="button">
+            🔧 Student 5
+        </button>
+    </nav>
+
+    <!-- Tab Container -->
+    <section class="tab-container" role="main">
+        <!-- Loading Indicator -->
+        <div class="loading-spinner" id="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading feature...</p>
+        </div>
+
+        <!-- Enrolment Feature -->
+        <iframe 
+            id="frame-enrolment" 
+            class="tab-frame is-active" 
+            src="http://localhost:8001" 
+            title="Enrolment Service"
+            sandbox="allow-same-origin allow-forms allow-scripts allow-popups allow-top-navigation"
+        ></iframe>
+
+        <!-- Student 2 Feature (Placeholder) -->
+        <iframe 
+            id="frame-student-2" 
+            class="tab-frame" 
+            src="about:blank" 
+            title="Student 2 Service"
+            sandbox="allow-same-origin allow-forms allow-scripts allow-popups allow-top-navigation"
+        ></iframe>
+
+        <!-- Student 3 Feature (Placeholder) -->
+        <iframe 
+            id="frame-student-3" 
+            class="tab-frame" 
+            src="about:blank" 
+            title="Student 3 Service"
+            sandbox="allow-same-origin allow-forms allow-scripts allow-popups allow-top-navigation"
+        ></iframe>
+
+        <!-- Student 4 Feature (Placeholder) -->
+        <iframe 
+            id="frame-student-4" 
+            class="tab-frame" 
+            src="about:blank" 
+            title="Student 4 Service"
+            sandbox="allow-same-origin allow-forms allow-scripts allow-popups allow-top-navigation"
+        ></iframe>
+
+        <!-- Student 5 Feature (Placeholder) -->
+        <iframe 
+            id="frame-student-5" 
+            class="tab-frame" 
+            src="about:blank" 
+            title="Student 5 Service"
+            sandbox="allow-same-origin allow-forms allow-scripts allow-popups allow-top-navigation"
+        ></iframe>
+    </section>
+
+    <!-- Status Bar -->
+    <footer class="status-bar">
+        <div class="status-item">
+            <span class="status-indicator online"></span>
+            <span>Enrolment: <strong id="status-enrolment">Ready</strong></span>
+        </div>
+        <div class="status-item">
+            <span class="status-indicator offline"></span>
+            <span>Student 2: <strong id="status-student-2">Pending</strong></span>
+        </div>
+        <div class="status-item">
+            <span class="status-indicator offline"></span>
+            <span>Student 3: <strong id="status-student-3">Pending</strong></span>
+        </div>
+        <div class="status-item">
+            <span class="status-indicator offline"></span>
+            <span>Student 4: <strong id="status-student-4">Pending</strong></span>
+        </div>
+        <div class="status-item">
+            <span class="status-indicator offline"></span>
+            <span>Student 5: <strong id="status-student-5">Pending</strong></span>
+        </div>
+    </footer>
+</div>
+
+<script>
+// Feature definitions - Update these with actual service URLs
+const FEATURES = {
+    enrolment: {
+        name: 'Enrolment Service',
+        url: 'http://localhost:8001',
+        port: 8001,
+        description: 'Student enrolment management'
+    },
+    'student-2': {
+        name: 'Student 2 Feature',
+        url: 'http://localhost:8002',
+        port: 8002,
+        description: 'Feature implementation by Student 2'
+    },
+    'student-3': {
+        name: 'Student 3 Feature',
+        url: 'http://localhost:8003',
+        port: 8003,
+        description: 'Feature implementation by Student 3'
+    },
+    'student-4': {
+        name: 'Student 4 Feature',
+        url: 'http://localhost:8004',
+        port: 8004,
+        description: 'Feature implementation by Student 4'
+    },
+    'student-5': {
+        name: 'Student 5 Feature',
+        url: 'http://localhost:8005',
+        port: 8005,
+        description: 'Feature implementation by Student 5'
+    }
+};
+
+const featureButtons = Array.from(document.querySelectorAll(".feature-btn"));
+const tabFrames = {
+    enrolment: document.getElementById("frame-enrolment"),
+    'student-2': document.getElementById("frame-student-2"),
+    'student-3': document.getElementById("frame-student-3"),
+    'student-4': document.getElementById("frame-student-4"),
+    'student-5': document.getElementById("frame-student-5")
+};
+
+const loadingSpinner = document.getElementById("loading-spinner");
+
+/**
+ * Activate a feature by name
+ */
+function activateFeature(featureName) {
+    // Update buttons
+    featureButtons.forEach((btn) => {
+        btn.classList.toggle("is-active", btn.dataset.feature === featureName);
+    });
+
+    // Update frames
+    Object.entries(tabFrames).forEach(([name, frame]) => {
+        frame.classList.toggle("is-active", name === featureName);
+    });
+
+    // Update URL hash for browser history
+    window.location.hash = featureName;
+
+    // Load frame if not already loaded
+    const feature = FEATURES[featureName];
+    const frame = tabFrames[featureName];
+    if (frame && frame.src === "about:blank" && feature) {
+        frame.src = feature.url;
+    }
+}
+
+/**
+ * Check service availability and update status indicators
+ */
+async function checkServiceStatus(featureName) {
+    const feature = FEATURES[featureName];
+    const statusElement = document.getElementById(`status-${featureName}`);
+    const statusIndicator = statusElement ? statusElement.parentElement.querySelector(".status-indicator") : null;
+
+    if (!feature || !statusIndicator) return;
+
+    try {
+        const response = await fetch(feature.url, { mode: 'no-cors', timeout: 2000 });
+        statusIndicator.classList.remove("offline");
+        statusIndicator.classList.add("online");
+        if (statusElement) statusElement.textContent = "Online";
+    } catch (error) {
+        statusIndicator.classList.remove("online");
+        statusIndicator.classList.add("offline");
+        if (statusElement) statusElement.textContent = "Offline";
+    }
+}
+
+/**
+ * Initialize event listeners
+ */
+function initializeEventListeners() {
+    featureButtons.forEach((btn) => {
+        if (btn.disabled) return;
+
+        btn.addEventListener("click", () => {
+            const featureName = btn.dataset.feature;
+            activateFeature(featureName);
+        });
+    });
+}
+
+/**
+ * Initialize from URL hash
+ */
+function initializeFromHash() {
+    const hash = window.location.hash.replace("#", "");
+    if (hash && tabFrames[hash]) {
+        activateFeature(hash);
+    } else {
+        activateFeature("enrolment");
+    }
+}
+
+/**
+ * Check all service statuses periodically
+ */
+function monitorServices() {
+    Object.keys(FEATURES).forEach(featureName => {
+        checkServiceStatus(featureName);
+    });
+
+    // Check every 30 seconds
+    setInterval(() => {
+        Object.keys(FEATURES).forEach(featureName => {
+            checkServiceStatus(featureName);
+        });
+    }, 30000);
+}
+
+/**
+ * Initialize on page load
+ */
+document.addEventListener("DOMContentLoaded", () => {
+    initializeEventListeners();
+    initializeFromHash();
+    monitorServices();
+
+    // Handle browser back/forward
+    window.addEventListener("hashchange", () => {
+        const hash = window.location.hash.replace("#", "");
+        if (hash && tabFrames[hash]) {
+            activateFeature(hash);
+        }
+    });
+});
+</script>
+</body>
+</html>

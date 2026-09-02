@@ -1,0 +1,260 @@
+/* ASD Release 0 - Shared Theme */
+:root {
+    --bg-0: #0b1020;
+    --bg-1: #111a31;
+    --bg-2: #1a2645;
+    --surface: #0f172b;
+    --surface-alt: #15213d;
+    --text: #e8edf8;
+    --muted: #9eb0d3;
+    --accent: #45c9ff;
+    --accent-strong: #1eb1ee;
+    --border: #2b3a63;
+    --radius: 12px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--text);
+    background:
+        radial-gradient(1100px 540px at 10% -10%, #1e3263 0%, transparent 60%),
+        radial-gradient(900px 480px at 100% 0%, #1a4e74 0%, transparent 58%),
+        linear-gradient(160deg, var(--bg-0) 0%, var(--bg-1) 46%, var(--bg-2) 100%);
+    min-height: 100vh;
+}
+
+.app-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.app-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 2rem;
+}
+
+.app-header h1 {
+    margin: 0 0 0.5rem 0;
+    font-size: 2.5rem;
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.app-header p {
+    margin: 0.5rem 0 0 0;
+    font-size: 1.1rem;
+    color: var(--muted);
+}
+
+.app-header .team-info {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-top: 1rem;
+}
+
+/* Tab Navigation */
+.feature-nav {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+}
+
+.feature-btn {
+    padding: 0.9rem 1.2rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, rgba(20, 31, 56, 0.95), rgba(13, 22, 41, 0.95));
+    color: var(--text);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.feature-btn:hover {
+    background: linear-gradient(180deg, rgba(30, 41, 66, 0.99), rgba(20, 30, 50, 0.99));
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(69, 201, 255, 0.2);
+}
+
+.feature-btn.is-active {
+    background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+    border-color: var(--accent);
+    color: #06202c;
+    box-shadow: 0 8px 20px rgba(69, 201, 255, 0.3);
+}
+
+.feature-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Tab Content */
+.tab-container {
+    position: relative;
+    background: linear-gradient(180deg, rgba(20, 31, 56, 0.95), rgba(13, 22, 41, 0.95));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+.tab-frame {
+    width: 100%;
+    min-height: 800px;
+    border: 0;
+    display: none;
+    background: linear-gradient(180deg, rgba(20, 31, 56, 0.95), rgba(13, 22, 41, 0.95));
+}
+
+.tab-frame.is-active {
+    display: block;
+}
+
+/* Loading indicator */
+.loading-spinner {
+    display: none;
+    text-align: center;
+    padding: 3rem;
+    color: var(--accent);
+}
+
+.loading-spinner.is-active {
+    display: block;
+}
+
+.spinner {
+    border: 4px solid var(--border);
+    border-top: 4px solid var(--accent);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Status Bar */
+.status-bar {
+    background: rgba(15, 23, 43, 0.8);
+    border-top: 1px solid var(--border);
+    padding: 1rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #666;
+}
+
+.status-indicator.online {
+    background: #00ff00;
+    box-shadow: 0 0 8px #00ff00;
+}
+
+.status-indicator.offline {
+    background: #ff4444;
+}
+
+.status-indicator.loading {
+    background: var(--accent);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .app-container {
+        padding: 1rem 0.5rem;
+    }
+
+    .app-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .app-header p {
+        font-size: 0.95rem;
+    }
+
+    .feature-nav {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.5rem;
+    }
+
+    .feature-btn {
+        padding: 0.7rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .tab-frame {
+        min-height: 600px;
+    }
+
+    .status-bar {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.5rem;
+    }
+
+    .status-item {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-container {
+        padding: 0.5rem;
+    }
+
+    .app-header h1 {
+        font-size: 1.4rem;
+    }
+
+    .feature-nav {
+        grid-template-columns: 1fr;
+    }
+
+    .tab-frame {
+        min-height: 400px;
+    }
+}

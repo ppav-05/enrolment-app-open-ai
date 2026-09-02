@@ -1,15 +1,41 @@
 services:
+    # Shared Index Portal (Entry Point)
+    shared-index:
+        build:
+            context: ./shared-index-service
+        container_name: shared-index
+        ports:
+            - "9000:80"
+        depends_on:
+            - frontend-service
+        networks:
+            - enrolment-network
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD", "wget", "-q", "-O-", "http://localhost/"]
+            interval: 10s
+            timeout: 5s
+            retries: 3
+            start_period: 5s
+
+    # Enrolment Frontend (Lab 04)
     frontend-service:
         build:
             context: ./frontend-service
         container_name: frontend-service
         ports:
-            - "8080:80"
+            - "8001:80"
         depends_on:
             - enrolment-service
         networks:
             - enrolment-network
         restart: unless-stopped
+        healthcheck:
+            test: ["CMD", "wget", "-q", "-O-", "http://localhost/"]
+            interval: 10s
+            timeout: 5s
+            retries: 3
+            start_period: 5s
 
     enrolment-service:
         build:
@@ -29,6 +55,12 @@ services:
         networks:
             - enrolment-network
         restart: unless-stopped
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:5001/"]
+            interval: 10s
+            timeout: 5s
+            retries: 3
+            start_period: 5s
 
     database-service:
         build:
@@ -43,6 +75,61 @@ services:
                 aliases:
                     - database-service
         restart: unless-stopped
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:5002/students"]
+            interval: 10s
+            timeout: 5s
+            retries: 3
+            start_period: 5s
+
+    # Placeholder services for Students 2-5 (remove when implementing)
+    student-2-frontend:
+        image: nginx:alpine
+        container_name: student-2-frontend
+        ports:
+            - "8002:80"
+        volumes:
+            - ./shared-index-service/css:/usr/share/nginx/html/css:ro
+        networks:
+            - enrolment-network
+        restart: unless-stopped
+        command: sh -c 'echo "<h1>Student 2 - Coming Soon</h1><p>Frontend not yet implemented</p>" > /usr/share/nginx/html/index.html && nginx -g "daemon off;"'
+
+    student-3-frontend:
+        image: nginx:alpine
+        container_name: student-3-frontend
+        ports:
+            - "8003:80"
+        volumes:
+            - ./shared-index-service/css:/usr/share/nginx/html/css:ro
+        networks:
+            - enrolment-network
+        restart: unless-stopped
+        command: sh -c 'echo "<h1>Student 3 - Coming Soon</h1><p>Frontend not yet implemented</p>" > /usr/share/nginx/html/index.html && nginx -g "daemon off;"'
+
+    student-4-frontend:
+        image: nginx:alpine
+        container_name: student-4-frontend
+        ports:
+            - "8004:80"
+        volumes:
+            - ./shared-index-service/css:/usr/share/nginx/html/css:ro
+        networks:
+            - enrolment-network
+        restart: unless-stopped
+        command: sh -c 'echo "<h1>Student 4 - Coming Soon</h1><p>Frontend not yet implemented</p>" > /usr/share/nginx/html/index.html && nginx -g "daemon off;"'
+
+    student-5-frontend:
+        image: nginx:alpine
+        container_name: student-5-frontend
+        ports:
+            - "8005:80"
+        volumes:
+            - ./shared-index-service/css:/usr/share/nginx/html/css:ro
+        networks:
+            - enrolment-network
+        restart: unless-stopped
+        command: sh -c 'echo "<h1>Student 5 - Coming Soon</h1><p>Frontend not yet implemented</p>" > /usr/share/nginx/html/index.html && nginx -g "daemon off;"'
 
 volumes:
     database_data:
