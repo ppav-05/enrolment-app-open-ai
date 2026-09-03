@@ -1,5 +1,11 @@
+version: "3.9"
+
 services:
-    # Shared Index Portal (Entry Point)
+    # ============================================
+    # SHARED INFRASTRUCTURE
+    # ============================================
+
+    # Shared Index Portal - Single Entry Point (Point 1)
     shared-index:
         build:
             context: ./shared-index-service
@@ -8,6 +14,7 @@ services:
             - "9000:80"
         depends_on:
             - frontend-service
+            - enrolment-service
         networks:
             - enrolment-network
         restart: unless-stopped
@@ -17,8 +24,15 @@ services:
             timeout: 5s
             retries: 3
             start_period: 5s
+        labels:
+            - "com.release0.service=shared-index"
+            - "com.release0.version=1.0"
 
-    # Enrolment Frontend (Lab 04)
+    # ============================================
+    # STUDENT 1: ENROLMENT SERVICE (Lab 04 Base)
+    # ============================================
+
+    # Enrolment Frontend - Web UI
     frontend-service:
         build:
             context: ./frontend-service
@@ -36,7 +50,11 @@ services:
             timeout: 5s
             retries: 3
             start_period: 5s
+        labels:
+            - "com.release0.student=1"
+            - "com.release0.service=frontend"
 
+    # Enrolment Backend - Flask API with AI Integration (Point 5)
     enrolment-service:
         build:
             context: .
@@ -45,9 +63,25 @@ services:
         ports:
             - "5001:5001"
         environment:
+            # Database Configuration
             DATABASE_SERVICE_URL: http://database-service:5002
+            
+            # AI/Ollama Configuration (Point 5)
             OLLAMA_BASE_URL: http://host.docker.internal:11434/v1
             OLLAMA_MODEL: qwen2.5:0.5b
+            OLLAMA_ENABLED: "true"
+            OLLAMA_TIMEOUT: "30"
+            
+            # Cross-Database API Configuration (Point 3)
+            STUDENT_1_DB_URL: http://database-service:5002
+            STUDENT_2_DB_URL: http://student-2-database:5011
+            STUDENT_3_DB_URL: http://student-3-database:5012
+            STUDENT_4_DB_URL: http://student-4-database:5013
+            STUDENT_5_DB_URL: http://student-5-database:5014
+            
+            # Flask Configuration
+            FLASK_ENV: production
+            FLASK_DEBUG: "0"
         extra_hosts:
             - "host.docker.internal:host-gateway"
         depends_on:
@@ -61,7 +95,12 @@ services:
             timeout: 5s
             retries: 3
             start_period: 5s
+        labels:
+            - "com.release0.student=1"
+            - "com.release0.service=backend"
+            - "com.release0.ai-enabled=true"
 
+    # Enrolment Database - SQLite with API
     database-service:
         build:
             context: ./database-service
@@ -76,13 +115,20 @@ services:
                     - database-service
         restart: unless-stopped
         healthcheck:
-            test: ["CMD", "curl", "-f", "http://localhost:5002/students"]
+            test: ["CMD", "curl", "-f", "http://localhost:5002/"]
             interval: 10s
             timeout: 5s
             retries: 3
             start_period: 5s
+        labels:
+            - "com.release0.student=1"
+            - "com.release0.service=database"
 
-    # Placeholder services for Students 2-5 (remove when implementing)
+    # ============================================
+    # STUDENT 2: PLACEHOLDER SERVICES
+    # ============================================
+    # Replace with actual services when implemented
+
     student-2-frontend:
         image: nginx:alpine
         container_name: student-2-frontend
@@ -94,6 +140,46 @@ services:
             - enrolment-network
         restart: unless-stopped
         command: sh -c 'echo "<h1>Student 2 - Coming Soon</h1><p>Frontend not yet implemented</p>" > /usr/share/nginx/html/index.html && nginx -g "daemon off;"'
+        labels:
+            - "com.release0.student=2"
+            - "com.release0.service=frontend"
+            - "com.release0.status=placeholder"
+
+    # Placeholder: Will be replaced with actual backend service
+    student-2-backend:
+        image: nginx:alpine
+        container_name: student-2-backend
+        ports:
+            - "5003:80"
+        networks:
+            - enrolment-network
+        restart: unless-stopped
+        command: sh -c 'echo "{\"status\":\"placeholder\"}" > /usr/share/nginx/html/index.json && nginx -g "daemon off;"'
+        labels:
+            - "com.release0.student=2"
+            - "com.release0.service=backend"
+            - "com.release0.status=placeholder"
+
+    # Placeholder: Will be replaced with actual database service
+    student-2-database:
+        image: nginx:alpine
+        container_name: student-2-database
+        ports:
+            - "5011:80"
+        networks:
+            enrolment-network:
+                aliases:
+                    - student-2-database
+        restart: unless-stopped
+        command: sh -c 'echo "{\"status\":\"placeholder\"}" > /usr/share/nginx/html/index.json && nginx -g "daemon off;"'
+        labels:
+            - "com.release0.student=2"
+            - "com.release0.service=database"
+            - "com.release0.status=placeholder"
+
+    # ============================================
+    # STUDENT 3: PLACEHOLDER SERVICES
+    # ============================================
 
     student-3-frontend:
         image: nginx:alpine
@@ -106,6 +192,44 @@ services:
             - enrolment-network
         restart: unless-stopped
         command: sh -c 'echo "<h1>Student 3 - Coming Soon</h1><p>Frontend not yet implemented</p>" > /usr/share/nginx/html/index.html && nginx -g "daemon off;"'
+        labels:
+            - "com.release0.student=3"
+            - "com.release0.service=frontend"
+            - "com.release0.status=placeholder"
+
+    student-3-backend:
+        image: nginx:alpine
+        container_name: student-3-backend
+        ports:
+            - "5004:80"
+        networks:
+            - enrolment-network
+        restart: unless-stopped
+        command: sh -c 'echo "{\"status\":\"placeholder\"}" > /usr/share/nginx/html/index.json && nginx -g "daemon off;"'
+        labels:
+            - "com.release0.student=3"
+            - "com.release0.service=backend"
+            - "com.release0.status=placeholder"
+
+    student-3-database:
+        image: nginx:alpine
+        container_name: student-3-database
+        ports:
+            - "5012:80"
+        networks:
+            enrolment-network:
+                aliases:
+                    - student-3-database
+        restart: unless-stopped
+        command: sh -c 'echo "{\"status\":\"placeholder\"}" > /usr/share/nginx/html/index.json && nginx -g "daemon off;"'
+        labels:
+            - "com.release0.student=3"
+            - "com.release0.service=database"
+            - "com.release0.status=placeholder"
+
+    # ============================================
+    # STUDENT 4: PLACEHOLDER SERVICES
+    # ============================================
 
     student-4-frontend:
         image: nginx:alpine
@@ -118,6 +242,44 @@ services:
             - enrolment-network
         restart: unless-stopped
         command: sh -c 'echo "<h1>Student 4 - Coming Soon</h1><p>Frontend not yet implemented</p>" > /usr/share/nginx/html/index.html && nginx -g "daemon off;"'
+        labels:
+            - "com.release0.student=4"
+            - "com.release0.service=frontend"
+            - "com.release0.status=placeholder"
+
+    student-4-backend:
+        image: nginx:alpine
+        container_name: student-4-backend
+        ports:
+            - "5005:80"
+        networks:
+            - enrolment-network
+        restart: unless-stopped
+        command: sh -c 'echo "{\"status\":\"placeholder\"}" > /usr/share/nginx/html/index.json && nginx -g "daemon off;"'
+        labels:
+            - "com.release0.student=4"
+            - "com.release0.service=backend"
+            - "com.release0.status=placeholder"
+
+    student-4-database:
+        image: nginx:alpine
+        container_name: student-4-database
+        ports:
+            - "5013:80"
+        networks:
+            enrolment-network:
+                aliases:
+                    - student-4-database
+        restart: unless-stopped
+        command: sh -c 'echo "{\"status\":\"placeholder\"}" > /usr/share/nginx/html/index.json && nginx -g "daemon off;"'
+        labels:
+            - "com.release0.student=4"
+            - "com.release0.service=database"
+            - "com.release0.status=placeholder"
+
+    # ============================================
+    # STUDENT 5: PLACEHOLDER SERVICES
+    # ============================================
 
     student-5-frontend:
         image: nginx:alpine
@@ -130,6 +292,40 @@ services:
             - enrolment-network
         restart: unless-stopped
         command: sh -c 'echo "<h1>Student 5 - Coming Soon</h1><p>Frontend not yet implemented</p>" > /usr/share/nginx/html/index.html && nginx -g "daemon off;"'
+        labels:
+            - "com.release0.student=5"
+            - "com.release0.service=frontend"
+            - "com.release0.status=placeholder"
+
+    student-5-backend:
+        image: nginx:alpine
+        container_name: student-5-backend
+        ports:
+            - "5006:80"
+        networks:
+            - enrolment-network
+        restart: unless-stopped
+        command: sh -c 'echo "{\"status\":\"placeholder\"}" > /usr/share/nginx/html/index.json && nginx -g "daemon off;"'
+        labels:
+            - "com.release0.student=5"
+            - "com.release0.service=backend"
+            - "com.release0.status=placeholder"
+
+    student-5-database:
+        image: nginx:alpine
+        container_name: student-5-database
+        ports:
+            - "5014:80"
+        networks:
+            enrolment-network:
+                aliases:
+                    - student-5-database
+        restart: unless-stopped
+        command: sh -c 'echo "{\"status\":\"placeholder\"}" > /usr/share/nginx/html/index.json && nginx -g "daemon off;"'
+        labels:
+            - "com.release0.student=5"
+            - "com.release0.service=database"
+            - "com.release0.status=placeholder"
 
 volumes:
     database_data:
