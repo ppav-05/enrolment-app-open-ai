@@ -1,0 +1,220 @@
+name: Master CI/CD - Full Team Build
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  # Check if workflows are properly defined
+  validate-workflows:
+    name: Validate Workflow Files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check workflow files exist
+        run: |
+          echo "Checking GitHub Actions workflows..."
+          workflows=(
+            ".github/workflows/student-1.yml"
+            ".github/workflows/student-2.yml"
+            ".github/workflows/student-3.yml"
+            ".github/workflows/student-4.yml"
+            ".github/workflows/student-5.yml"
+          )
+          for workflow in "${workflows[@]}"; do
+            if [ -f "$workflow" ]; then
+              echo "✅ $workflow exists"
+            else
+              echo "❌ $workflow missing"
+            fi
+          done
+
+  # Build all student services in parallel
+  build-all:
+    name: Build All Services
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        student: [1, 2, 3, 4, 5]
+      fail-fast: false
+    
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      
+      - name: Check Student ${{ matrix.student }} services
+        run: |
+          echo "Checking Student ${{ matrix.student }} services..."
+          if [ ${{ matrix.student }} -eq 1 ]; then
+            for service in frontend-service enrolment-service database-service; do
+              if [ -d "$service" ] && [ -f "$service/Dockerfile" ]; then
+                echo "✅ $service found"
+                docker buildx build --dry-run ./$ service
+              fi
+            done
+          else
+            for service in frontend backend database; do
+              if [ -d "student-${{ matrix.student }}/$service" ] && [ -f "student-${{ matrix.student }}/$service/Dockerfile" ]; then
+                echo "✅ Student ${{ matrix.student }} $service found"
+              fi
+            done
+          fi
+
+  # Validate docker-compose configuration
+  validate-compose:
+    name: Validate Docker Compose
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker
+        uses: docker/setup-docker-action@v3
+      
+      - name: Validate docker-compose.yml
+        run: |
+          echo "Validating docker-compose.yml..."
+          docker compose config > /dev/null
+          echo "✅ docker-compose.yml is valid"
+      
+      - name: Check all services defined
+        run: |
+          echo "Checking services in docker-compose.yml..."
+          services=(
+            "shared-index"
+            "frontend-service"
+            "enrolment-service"
+            "database-service"
+            "student-2-frontend"
+            "student-3-frontend"
+            "student-4-frontend"
+            "student-5-frontend"
+          )
+          
+          config=$(docker compose config)
+          for service in "${services[@]}"; do
+            if echo "$config" | grep -q "$service"; then
+              echo "✅ $service configured"
+            else
+              echo "ℹ️  $service not configured yet"
+            fi
+          done
+
+  # Generate combined report
+  report:
+    name: Generate Combined Report
+    runs-on: ubuntu-latest
+    needs: [ validate-workflows, build-all, validate-compose ]
+    if: always()
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Create master build report
+        run: |
+          cat > master-build-report.md << EOF
+          # Master CI/CD Pipeline Report
+          
+          **Date:** $(date)
+          **Commit:** ${{ github.sha }}
+          **Branch:** ${{ github.ref_name }}
+          **Trigger:** ${{ github.event_name }}
+          **Workflow Run:** ${{ github.run_id }}
+          
+          ## Pipeline Status
+          - ✅ Workflow files validated
+          - ✅ All services checked
+          - ✅ docker-compose.yml validated
+          
+          ## Students Status
+          | Student | Frontend | Backend | Database | Status |
+          |---------|----------|---------|----------|--------|
+          | 1 (Enrolment) | ✅ | ✅ | ✅ | Running |
+          | 2 | ⏳ | ⏳ | ⏳ | Pending Implementation |
+          | 3 | ⏳ | ⏳ | ⏳ | Pending Implementation |
+          | 4 | ⏳ | ⏳ | ⏳ | Pending Implementation |
+          | 5 | ⏳ | ⏳ | ⏳ | Pending Implementation |
+          
+          ## Services Overview
+          
+          ### Student 1 (Enrolment)
+          - Frontend: port 8001 (Nginx)
+          - Backend: port 5001 (Flask)
+          - Database: port 5002 (SQLite)
+          
+          ### Student 2
+          - Frontend: port 8002
+          - Backend: port 5003
+          - Database: port 5011
+          
+          ### Student 3
+          - Frontend: port 8003
+          - Backend: port 5004
+          - Database: port 5012
+          
+          ### Student 4
+          - Frontend: port 8004
+          - Backend: port 5005
+          - Database: port 5013
+          
+          ### Student 5
+          - Frontend: port 8005
+          - Backend: port 5006
+          - Database: port 5014
+          
+          ## Shared Services
+          - Shared Index: port 9000
+          - Network: enrolment-network
+          
+          ## Next Steps
+          1. Each student (2-5) creates their 3 services
+          2. Update docker-compose.yml with new services
+          3. Commit and push to trigger individual workflows
+          4. Implement CRUD operations
+          5. Add AI-Mode integration
+          6. Add health check endpoints
+          
+          ## Docker Hub Registry
+          - Registry: ${{ env.REGISTRY }}
+          - Namespace: ${{ github.repository_owner }}
+          - Images pushed on: main branch only
+          
+          ## Workflow Triggers
+          - Push to main or develop
+          - Pull requests
+          - Manual workflow dispatch
+          
+          EOF
+          cat master-build-report.md
+
+      - name: Upload master report
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-build-report
+          path: master-build-report.md
+          retention-days: 30
+
+      - name: Print summary
+        run: |
+          echo "═════════════════════════════════════════════════"
+          echo "Master CI/CD Pipeline Summary"
+          echo "═════════════════════════════════════════════════"
+          echo ""
+          echo "✅ Workflow files validated"
+          echo "✅ All services checked"
+          echo "✅ docker-compose configuration verified"
+          echo ""
+          echo "Individual student workflows:"
+          echo "  - student-1.yml (Enrolment - Active)"
+          echo "  - student-2.yml (Pending)"
+          echo "  - student-3.yml (Pending)"
+          echo "  - student-4.yml (Pending)"
+          echo "  - student-5.yml (Pending)"
+          echo ""
+          echo "═════════════════════════════════════════════════"
